@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>活动情报与低能耗社交助理</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">本地优先 · 静态 Demo · 不联网分析</p>
+        <h1>活动情报与低能耗社交助理</h1>
+        <p class="subtitle">帮你在活动前判断谁值得聊、聊什么、观察什么；活动后沉淀信息、跟进关系。</p>
+        <ul class="feature-list">
+          <li>输入活动信息</li>
+          <li>生成会前简报草稿</li>
+          <li>输入活动后转写</li>
+          <li>生成会后复盘草稿</li>
+          <li>复制或下载 Markdown</li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <section class="workspace">
+        <form class="card input-card" id="eventForm">
+          <div class="section-title">
+            <h2>活动信息输入</h2>
+            <button type="button" id="loadSample">加载示例活动</button>
+          </div>
+
+          <label>活动名称<input id="eventName" type="text" placeholder="例如：AI 出海青年科创分享会"></label>
+          <label>活动链接<input id="eventUrl" type="url" placeholder="https://example.com/event"></label>
+          <label>活动时间<input id="eventTime" type="text" placeholder="2026-06-01 14:00-17:30"></label>
+          <div class="two-columns">
+            <label>城市<input id="eventCity" type="text" placeholder="深圳"></label>
+            <label>场地<input id="eventVenue" type="text" placeholder="南山青年创新中心"></label>
+          </div>
+          <label>主办方<input id="eventOrganizer" type="text" placeholder="主办方名称"></label>
+          <label>活动主题<input id="eventTopic" type="text" placeholder="AI 出海、跨境电商、青年创业"></label>
+          <label>嘉宾名单<textarea id="eventSpeakers" rows="4" placeholder="每行一位：姓名，身份/机构"></textarea></label>
+          <label>活动简介<textarea id="eventDescription" rows="4" placeholder="粘贴报名页简介、海报文字或你掌握的信息"></textarea></label>
+          <label>我的参加目标<textarea id="userGoal" rows="3" placeholder="例如：找到 1-2 个一线信息源"></textarea></label>
+          <label>我的当前关注方向<textarea id="userFocus" rows="3" placeholder="例如：跨境卖家的 AI 内容分析工具"></textarea></label>
+          <label>我的精力状态<select id="energyLevel"><option>低</option><option selected>中</option><option>高</option></select></label>
+          <button type="button" class="primary" id="generateBrief">生成会前简报</button>
+        </form>
+
+        <section class="card output-card">
+          <div class="section-title">
+            <h2>会前简报预览</h2>
+            <div class="button-row">
+              <button type="button" data-copy="brief">复制 Markdown</button>
+              <button type="button" data-download="brief">下载 Markdown</button>
+            </div>
+          </div>
+          <pre id="briefOutput" class="markdown-output">请先填写活动信息，或点击“加载示例活动”。</pre>
+        </section>
+      </section>
+
+      <section class="workspace review-section">
+        <section class="card input-card">
+          <h2>活动后转写复盘</h2>
+          <p class="hint">第一版只支持文本输入，不做音频上传，不做真实语音识别。</p>
+          <label>活动名称<input id="reviewEventName" type="text" placeholder="活动名称"></label>
+          <label>转写文本<textarea id="transcriptText" rows="12" placeholder="请粘贴用户主动提供的转写或会后笔记"></textarea></label>
+          <button type="button" class="primary" id="generateReview">生成复盘</button>
+        </section>
+
+        <section class="card output-card">
+          <div class="section-title">
+            <h2>会后复盘预览</h2>
+            <div class="button-row">
+              <button type="button" data-copy="review">复制 Markdown</button>
+              <button type="button" data-download="review">下载 Markdown</button>
+            </div>
+          </div>
+          <pre id="reviewOutput" class="markdown-output">请粘贴转写文本后生成复盘。</pre>
+        </section>
+      </section>
+    </main>
+
+    <footer>
+      <strong>隐私提示：</strong>本 demo 默认在浏览器本地运行，不会上传你的活动信息、录音转写或人物记录。请不要输入未经授权的私人信息。
+    </footer>
+
+    <script src="sample-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
