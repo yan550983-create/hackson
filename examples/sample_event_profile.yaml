@@ -1,0 +1,89 @@
+event:
+  name: "AI 出海青年科创分享会"
+  url: "https://example.com/ai-global-youth-demo"
+  date: "2026-06-01"
+  time: "14:00-17:30"
+  city: "深圳"
+  venue: "南山青年创新中心 3 楼路演厅"
+  organizer: "远航青年科创社"
+  co_organizers:
+    - "湾区出海产品社区"
+    - "青创实验室"
+  sponsors:
+    - "星桥云服务"
+  topic: "AI 产品出海、TikTok Shop 运营与青年创业协作"
+  description: "面向青年创业者、AI 产品经理、跨境电商从业者和早期投资观察者的线下分享活动。"
+  agenda:
+    - "14:00-14:20 签到与自由交流"
+    - "14:20-15:00 AI 硬件产品出海经验分享"
+    - "15:00-15:40 跨境 SaaS 从 0 到 1 的产品验证"
+    - "15:40-16:20 TikTok Shop 内容与供应链协同"
+    - "16:20-17:00 圆桌：青年团队如何找到第一批海外用户"
+    - "17:00-17:30 自由交流"
+  speakers:
+    - name: "林澈"
+      role: "AI 硬件创业者"
+      organization: "澈光智能"
+      topic: "小团队如何验证 AI 硬件出海需求"
+    - name: "周远"
+      role: "跨境 SaaS 产品负责人"
+      organization: "LinkPilot"
+      topic: "B2B SaaS 海外冷启动"
+    - name: "陈牧"
+      role: "早期投资人"
+      organization: "晨湾资本"
+      topic: "出海项目的早期判断框架"
+    - name: "何青"
+      role: "TikTok Shop 运营负责人"
+      organization: "青石增长"
+      topic: "内容场景中的产品反馈收集"
+  guests:
+    - "跨境电商卖家"
+    - "AI 应用创业者"
+    - "高校创新社团负责人"
+  registration_info: "报名页强调项目交流、资源对接和圆桌提问，限 80 人。"
+  poster_text: "AI 出海、青年科创、TikTok Shop、跨境 SaaS、早期投资观察。"
+  past_events:
+    - "2026 青年出海产品夜谈"
+    - "AI 应用创业闭门分享"
+  related_links:
+    - "https://example.com/organizer-past-events"
+    - "https://example.com/event-poster"
+
+user_context:
+  my_goal: "判断 AI 出海与 TikTok Shop 交叉方向是否有真实需求，找到 1-2 个高质量信息源。"
+  my_background: "关注 AI 工具、跨境电商和轻量产品原型的独立开发者。"
+  my_current_focus: "面向跨境卖家的 AI 内容分析和选品辅助工具。"
+  people_i_already_know:
+    - "一位湾区出海产品社区志愿者"
+  people_i_want_to_meet:
+    - "有 TikTok Shop 一线经验的人"
+    - "做过海外用户验证的产品负责人"
+  topics_i_care_about:
+    - "海外用户真实需求"
+    - "内容数据如何转成产品判断"
+    - "早期项目如何验证付费意愿"
+  topics_to_avoid:
+    - "泛泛的融资故事"
+    - "没有数据依据的风口判断"
+  energy_level: "medium"
+  preferred_interaction_style: "少量深聊，会后用文字跟进"
+
+analysis_preferences:
+  language: "zh"
+  depth: "medium"
+  output_style: "concise"
+  risk_tolerance: "low"
+  include_conversation_starters: true
+  include_follow_up_plan: true
+  include_observation_checklist: true
+
+source_notes:
+  public_sources:
+    - "示例报名页"
+    - "示例活动海报"
+  user_provided_materials:
+    - "用户自填目标和关注方向"
+  missing_information:
+    - "真实报名人构成"
+    - "嘉宾过往公开案例链接"

@@ -1,0 +1,44 @@
+event:
+  name: "" # 活动名称
+  url: "" # 活动链接
+  date: "" # 活动日期，例如 2026-06-01
+  time: "" # 活动时间，例如 14:00-17:00
+  city: "" # 城市
+  venue: "" # 场地
+  organizer: "" # 主办方
+  co_organizers: [] # 协办方
+  sponsors: [] # 赞助方
+  topic: "" # 活动主题
+  description: "" # 活动简介
+  agenda: [] # 活动议程
+  speakers: [] # 确定嘉宾/演讲者
+  guests: [] # 用户已知可能参会者
+  registration_info: "" # 报名页信息
+  poster_text: "" # 活动海报文字
+  past_events: [] # 主办方过往活动
+  related_links: [] # 相关公开链接
+
+user_context:
+  my_goal: "" # 我参加这个活动的目标
+  my_background: "" # 我的背景
+  my_current_focus: "" # 我当前关注方向
+  people_i_already_know: [] # 我已经认识的人
+  people_i_want_to_meet: [] # 我想认识的人
+  topics_i_care_about: [] # 我关心的话题
+  topics_to_avoid: [] # 我不想聊的话题
+  energy_level: "medium" # low / medium / high
+  preferred_interaction_style: "" # 偏好的交流方式，例如一对一、少量深聊、会后跟进
+
+analysis_preferences:
+  language: "zh"
+  depth: "medium" # shallow / medium / deep
+  output_style: "concise" # concise / detailed
+  risk_tolerance: "low" # low / medium / high
+  include_conversation_starters: true
+  include_follow_up_plan: true
+  include_observation_checklist: true
+
+source_notes:
+  public_sources: [] # 公开来源
+  user_provided_materials: [] # 用户提供的材料
+  missing_information: [] # 待补充信息

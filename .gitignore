@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+outputs/**/*.md
+outputs/**/*.txt
+outputs/**/*.json
+outputs/transcripts/*
+outputs/reviews/*
+outputs/people/*
+outputs/tasks/*
+outputs/briefs/*
+
+!outputs/**/.gitkeep
