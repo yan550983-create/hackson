@@ -3,89 +3,197 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>活动情报与低能耗社交助理</title>
+    <title>Focus Reading Launcher</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <header class="hero">
-      <div>
-        <p class="eyebrow">本地优先 · 静态 Demo · 不联网分析</p>
-        <h1>活动情报与低能耗社交助理</h1>
-        <p class="subtitle">帮你在活动前判断谁值得聊、聊什么、观察什么；活动后沉淀信息、跟进关系。</p>
-        <ul class="feature-list">
-          <li>输入活动信息</li>
-          <li>生成会前简报草稿</li>
-          <li>输入活动后转写</li>
-          <li>生成会后复盘草稿</li>
-          <li>复制或下载 Markdown</li>
-        </ul>
-      </div>
-    </header>
+    <div class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">本地优先 · 限时阅读 · 进入与退出仪式</p>
+        <div class="hero-grid">
+          <div>
+            <h1>Focus Reading Launcher</h1>
+            <p class="subtitle">把网页链接、粘贴文本或本地文件，整理成一次安静、有边界、有进度的阅读 Session。</p>
+          </div>
+          <div class="stage-map" aria-label="阅读阶段">
+            <span>创建材料</span>
+            <span>进入仪式</span>
+            <span>专注阅读</span>
+            <span>完成退出</span>
+          </div>
+        </div>
+      </header>
 
-    <main>
-      <section class="workspace">
-        <form class="card input-card" id="eventForm">
-          <div class="section-title">
-            <h2>活动信息输入</h2>
-            <button type="button" id="loadSample">加载示例活动</button>
+      <main>
+        <section id="homeView" class="view is-active" aria-label="首页">
+          <div class="layout-grid">
+            <section class="panel input-panel">
+              <div class="section-heading">
+                <p class="eyebrow dark">Step 1</p>
+                <h2>放入本次要读的材料</h2>
+                <p>第一版只在浏览器本地处理内容，不登录、不上传、不做 AI 总结。</p>
+              </div>
+
+              <form id="sessionForm" class="session-form">
+                <label>
+                  材料标题
+                  <input id="titleInput" type="text" placeholder="例如：本周 GPT 周报 / 一篇行业文章">
+                </label>
+
+                <fieldset class="source-tabs" aria-label="材料来源类型">
+                  <legend>来源类型</legend>
+                  <label><input type="radio" name="sourceType" value="link" checked> 网页链接 URL</label>
+                  <label><input type="radio" name="sourceType" value="text"> 粘贴文本</label>
+                  <label><input type="radio" name="sourceType" value="file"> 上传文件</label>
+                </fieldset>
+
+                <div class="source-box" data-source-panel="link">
+                  <label>
+                    网页链接
+                    <input id="urlInput" type="url" placeholder="https://example.com/article">
+                  </label>
+                  <p class="hint">MVP 不抓取网页内容。阅读时会提供“打开链接”按钮。</p>
+                </div>
+
+                <div class="source-box is-hidden" data-source-panel="text">
+                  <label>
+                    粘贴内容
+                    <textarea id="textInput" rows="10" placeholder="粘贴 GPT 周报、文章摘录、会议资料或你想集中阅读的文本"></textarea>
+                  </label>
+                </div>
+
+                <div class="source-box is-hidden" data-source-panel="file">
+                  <label>
+                    本地文件
+                    <input id="fileInput" type="file" accept=".txt,.md,.pdf,text/plain,text/markdown,application/pdf">
+                  </label>
+                  <p class="hint" id="fileHint">支持 txt / md 直接预览；pdf 第一版仅保存文件名并显示后续解析提示。</p>
+                </div>
+
+                <div class="time-picker">
+                  <p>选择本次阅读时间</p>
+                  <div class="time-options" id="timeOptions">
+                    <label><input type="radio" name="duration" value="15" checked>15 分钟</label>
+                    <label><input type="radio" name="duration" value="25">25 分钟</label>
+                    <label><input type="radio" name="duration" value="45">45 分钟</label>
+                    <label><input type="radio" name="duration" value="60">60 分钟</label>
+                    <label class="custom-time"><input type="radio" name="duration" value="custom">自定义 <input id="customMinutes" type="number" min="1" max="240" placeholder="分钟"></label>
+                  </div>
+                </div>
+
+                <button class="primary-action" type="submit">创建阅读 Session</button>
+              </form>
+            </section>
+
+            <aside class="panel session-panel">
+              <div class="section-heading">
+                <p class="eyebrow dark">Step 2</p>
+                <h2>当前阅读卡片</h2>
+                <p>创建后先进入仪式，不会直接开始倒计时。</p>
+              </div>
+              <div id="currentSessionCard" class="empty-card">
+                <p>还没有阅读 Session。请先放入一份材料。</p>
+              </div>
+            </aside>
           </div>
 
-          <label>活动名称<input id="eventName" type="text" placeholder="例如：AI 出海青年科创分享会"></label>
-          <label>活动链接<input id="eventUrl" type="url" placeholder="https://example.com/event"></label>
-          <label>活动时间<input id="eventTime" type="text" placeholder="2026-06-01 14:00-17:30"></label>
-          <div class="two-columns">
-            <label>城市<input id="eventCity" type="text" placeholder="深圳"></label>
-            <label>场地<input id="eventVenue" type="text" placeholder="南山青年创新中心"></label>
-          </div>
-          <label>主办方<input id="eventOrganizer" type="text" placeholder="主办方名称"></label>
-          <label>活动主题<input id="eventTopic" type="text" placeholder="AI 出海、跨境电商、青年创业"></label>
-          <label>嘉宾名单<textarea id="eventSpeakers" rows="4" placeholder="每行一位：姓名，身份/机构"></textarea></label>
-          <label>活动简介<textarea id="eventDescription" rows="4" placeholder="粘贴报名页简介、海报文字或你掌握的信息"></textarea></label>
-          <label>我的参加目标<textarea id="userGoal" rows="3" placeholder="例如：找到 1-2 个一线信息源"></textarea></label>
-          <label>我的当前关注方向<textarea id="userFocus" rows="3" placeholder="例如：跨境卖家的 AI 内容分析工具"></textarea></label>
-          <label>我的精力状态<select id="energyLevel"><option>低</option><option selected>中</option><option>高</option></select></label>
-          <button type="button" class="primary" id="generateBrief">生成会前简报</button>
-        </form>
-
-        <section class="card output-card">
-          <div class="section-title">
-            <h2>会前简报预览</h2>
-            <div class="button-row">
-              <button type="button" data-copy="brief">复制 Markdown</button>
-              <button type="button" data-download="brief">下载 Markdown</button>
+          <section class="panel history-panel">
+            <div class="section-heading row-heading">
+              <div>
+                <p class="eyebrow dark">History</p>
+                <h2>历史阅读记录</h2>
+              </div>
+              <button id="clearHistoryButton" class="ghost-action" type="button">清空历史</button>
             </div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </section>
+
+        <section id="ritualView" class="view ritual-view" aria-label="进入仪式">
+          <div class="ritual-card">
+            <p class="eyebrow dark">进入仪式</p>
+            <h2 id="ritualTitle">准备开始阅读</h2>
+            <div class="breath-circle" aria-hidden="true">读</div>
+            <ul class="ritual-steps">
+              <li>把这次阅读只当作一个小 Session，不处理其他任务。</li>
+              <li>确认手机、聊天窗口和无关标签页不会打断你。</li>
+              <li>在心里选一个问题：我读完后最想带走什么？</li>
+            </ul>
+            <button id="enterReadingButton" class="primary-action" type="button">我已进入阅读状态</button>
+            <button id="cancelRitualButton" class="text-action" type="button">返回首页</button>
           </div>
-          <pre id="briefOutput" class="markdown-output">请先填写活动信息，或点击“加载示例活动”。</pre>
-        </section>
-      </section>
-
-      <section class="workspace review-section">
-        <section class="card input-card">
-          <h2>活动后转写复盘</h2>
-          <p class="hint">第一版只支持文本输入，不做音频上传，不做真实语音识别。</p>
-          <label>活动名称<input id="reviewEventName" type="text" placeholder="活动名称"></label>
-          <label>转写文本<textarea id="transcriptText" rows="12" placeholder="请粘贴用户主动提供的转写或会后笔记"></textarea></label>
-          <button type="button" class="primary" id="generateReview">生成复盘</button>
         </section>
 
-        <section class="card output-card">
-          <div class="section-title">
-            <h2>会后复盘预览</h2>
-            <div class="button-row">
-              <button type="button" data-copy="review">复制 Markdown</button>
-              <button type="button" data-download="review">下载 Markdown</button>
-            </div>
+        <section id="readingView" class="view" aria-label="阅读页面">
+          <div class="reading-layout">
+            <aside class="reading-status panel">
+              <p class="eyebrow dark">专注阅读中</p>
+              <h2 id="readingTitle">阅读标题</h2>
+              <div class="timer" id="timerDisplay">25:00</div>
+              <div class="progress-block">
+                <div class="progress-label"><span>时间进度</span><strong id="timeProgressText">0%</strong></div>
+                <div class="progress-track"><div id="timeProgressBar" class="progress-fill time-fill"></div></div>
+              </div>
+              <div class="progress-block">
+                <div class="progress-label"><span>阅读进度</span><strong id="readingProgressText">0%</strong></div>
+                <input id="readingProgressRange" type="range" min="0" max="100" step="5" value="0">
+                <div class="quick-progress">
+                  <button type="button" data-progress="25">25%</button>
+                  <button type="button" data-progress="50">50%</button>
+                  <button type="button" data-progress="75">75%</button>
+                  <button type="button" data-progress="100">100%</button>
+                </div>
+              </div>
+              <label>
+                标记一个关键点
+                <textarea id="keyPointInput" rows="4" placeholder="写下一个你不想忘记的点"></textarea>
+              </label>
+              <div class="reading-actions">
+                <button id="saveKeyPointButton" class="ghost-action" type="button">保存关键点</button>
+                <button id="finishReadingButton" class="primary-action" type="button">我读完了</button>
+              </div>
+            </aside>
+
+            <article class="content-panel panel">
+              <div class="content-toolbar">
+                <div>
+                  <p class="eyebrow dark" id="sourceTypeLabel">text</p>
+                  <h2>阅读内容</h2>
+                </div>
+                <a id="openLinkButton" class="link-button is-hidden" href="#" target="_blank" rel="noopener noreferrer">打开链接</a>
+              </div>
+              <div id="contentArea" class="content-area"></div>
+              <div class="key-points">
+                <h3>本次关键点</h3>
+                <ul id="keyPointList"></ul>
+              </div>
+            </article>
           </div>
-          <pre id="reviewOutput" class="markdown-output">请粘贴转写文本后生成复盘。</pre>
         </section>
-      </section>
-    </main>
 
-    <footer>
-      <strong>隐私提示：</strong>本 demo 默认在浏览器本地运行，不会上传你的活动信息、录音转写或人物记录。请不要输入未经授权的私人信息。
-    </footer>
+        <section id="exitView" class="view ritual-view" aria-label="退出仪式">
+          <div class="ritual-card exit-card">
+            <p class="eyebrow dark">退出仪式</p>
+            <h2>把阅读收束成一个明确收获</h2>
+            <p id="exitMeta" class="exit-meta"></p>
+            <label>
+              读到最重要的点
+              <textarea id="takeawayInput" rows="5" placeholder="一句话写清：这次阅读最值得带走的判断、事实或问题"></textarea>
+            </label>
+            <label>
+              下一步可选动作（可留空）
+              <input id="nextActionInput" type="text" placeholder="例如：明天复读第 3 部分 / 发给同事讨论 / 放弃继续研究">
+            </label>
+            <button id="completeExitButton" class="primary-action" type="button">完成退出并保存记录</button>
+          </div>
+        </section>
+      </main>
 
-    <script src="sample-data.js"></script>
+      <footer>
+        <strong>隐私提示：</strong>所有 Session 和历史记录默认保存在当前浏览器 localStorage；不会上传材料内容，也不会自动发送任何跟进信息。
+      </footer>
+    </div>
+
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,150 +1,45 @@
-# event-networking-assistant
+# Focus Reading Launcher
 
-中文名：**活动情报与低能耗社交助理**。
+**Focus Reading Launcher** 是一个本地优先的静态网页 MVP，用来把用户放进去的网页链接、粘贴文本、或本地文件，转成一次有时间限制、有进度条、有进入仪式、有退出仪式的阅读 Session。
 
-这是一个本地优先的 Codex Skill + Markdown 模板 + Python 脚本 + 静态网页 demo 项目。它帮助用户参加线下活动前后进行信息判断和关系沉淀：活动前判断这是什么局、谁值得聊、聊什么、现场观察什么；活动后从笔记或转写中整理有效信息、跟进对象和话术草稿。
+它不是 todo list，也不是复杂的知识库；第一版目标是帮助用户在图书馆、书店、通勤前后，用低干扰的方式完成一次明确、有边界的阅读。
 
-它不是普通社交软件，也不是泛泛的人脉 CRM，而是：
 
-- 活动情报系统
-- 低能耗社交决策系统
-- 会后复盘系统
+## 网页在哪里，怎么运行
 
-## 适用场景
+最短答案：网页就在 `web/index.html`。
 
-适合经常参加以下活动的用户：
+你有两种打开方式：
 
-- AI、出海、TikTok Shop、跨境电商活动
-- 创业、投资、行业分享、黑客松
-- 青年科创、产品社区、线下闭门交流
+### 方式一：直接打开文件
 
-目标不是“多认识人”，而是提前判断：
-
-- 这个活动本质上是什么局
-- 主办方想聚集什么人
-- 哪些角色值得优先关注
-- 可以聊什么、问什么
-- 精力有限时最小有效行动是什么
-- 活动后该跟进谁、怎么跟进
-
-## 不适用场景
-
-v0 不适合：
-
-- 需要自动爬虫或实时联网搜索的活动分析
-- 需要自动同步联系人或自动发送消息的 CRM
-- 需要真实音频上传、语音识别、声纹识别的场景
-- 需要登录、云端数据库、多人协作后台的复杂应用
-- 需要处理未经授权私人信息的场景
-
-## 目录结构
+在文件管理器或编辑器里打开：
 
 ```text
-event-networking-assistant/
-  README.md
-  AGENTS.md
-  requirements.txt
-  .gitignore
-  skills/event-networking-assistant/SKILL.md
-  templates/
-  examples/
-  outputs/
-  scripts/
-  web/
-  docs/
-  .github/workflows/deploy-pages.yml
+web/index.html
 ```
 
-## 如何填写活动信息
+### 方式二：本地启动静态服务器（推荐）
 
-复制或编辑：
-
-```text
-templates/event_profile.yaml
-```
-
-建议另存为自己的活动文件，例如：
-
-```text
-examples/my_event_profile.yaml
-```
-
-字段包括活动名称、链接、时间、城市、场地、主办方、协办方、赞助方、主题、简介、议程、嘉宾、报名页信息、海报文字、过往活动、用户目标、用户背景、关注方向、想认识的人、关心话题、回避话题、精力状态等。
-
-如果信息不足，可以留空。脚本会在报告中标注“待补充”，不会编造。
-
-## 生成会前简报
-
-安装依赖：
+从仓库根目录运行：
 
 ```bash
-pip install -r requirements.txt
-python scripts/generate_brief.py
+python -m http.server 8000
 ```
 
-或指定活动信息文件：
-
-```bash
-python scripts/generate_brief.py examples/sample_event_profile.yaml
-```
-
-输出位置：
+然后在浏览器打开：
 
 ```text
-outputs/briefs/
+http://127.0.0.1:8000/
 ```
 
-文件名格式：
+根目录的 `index.html` 会自动跳到实际网页文件：
 
 ```text
-YYYY-MM-DD-event-name-pre-brief.md
+http://127.0.0.1:8000/web/index.html
 ```
 
-## 使用录音/转写复盘
-
-v0 不做真实录音上传，也不做真实音频转写。请只粘贴用户主动提供且有权处理的 Markdown 或 TXT 文本。
-
-生成会后复盘：
-
-```bash
-python scripts/generate_review_from_transcript.py
-```
-
-或指定转写文件：
-
-```bash
-python scripts/generate_review_from_transcript.py examples/sample_transcript.md
-```
-
-输出位置：
-
-```text
-outputs/reviews/
-```
-
-文件名格式：
-
-```text
-YYYY-MM-DD-event-name-post-review.md
-```
-
-## 在线 Demo
-
-部署后地址格式：
-
-```text
-https://<your-github-username>.github.io/event-networking-assistant/
-```
-
-如果使用 GitHub 账号 `yan550983-create`，可以替换成：
-
-```text
-https://yan550983-create.github.io/event-networking-assistant/
-```
-
-但项目不会强制写死任何 GitHub 用户名。
-
-## 本地运行网页 Demo
+也可以直接运行：
 
 ```bash
 cd web
@@ -154,86 +49,159 @@ python -m http.server 8000
 然后打开：
 
 ```text
+http://127.0.0.1:8000
+```
+
+
+## GitHub 上怎么访问
+
+如果你不想在本地运行，可以用 GitHub Pages 部署。仓库已经包含 GitHub Actions 工作流：
+
+```text
+.github/workflows/deploy-pages.yml
+```
+
+部署步骤：
+
+1. 把代码 push 到 GitHub 的 `main` 分支。
+2. 在 GitHub 仓库页面进入 `Settings`。
+3. 进入 `Pages`。
+4. `Source` 选择 `GitHub Actions`。
+5. 回到 `Actions`，运行或等待 `Deploy Focus Reading Launcher to GitHub Pages`。
+6. 部署成功后访问：
+
+```text
+https://<你的 GitHub 用户名>.github.io/<仓库名>/
+```
+
+如果仓库名是 `hackson`，地址通常是：
+
+```text
+https://<你的 GitHub 用户名>.github.io/hackson/
+```
+
+根页面会自动进入真正的应用页面：
+
+```text
+/web/index.html
+```
+
+这版部署只发布 `index.html`、`web/index.html`、`web/styles.css` 和 `web/app.js`，不会发布脚本、模板或输出目录。
+
+## MVP 已实现能力
+
+- 输入三类材料：
+  - 网页链接 URL
+  - 粘贴文本，例如 GPT 周报、文章摘录、会议资料
+  - 上传本地文件：`txt` / `md` 可直接预览，`pdf` 暂时显示占位提示
+- 创建阅读 Session 卡片：
+  - 标题
+  - 来源类型：`link` / `text` / `file`
+  - 预计阅读时长
+  - 当前阅读状态：未开始 / 阅读中 / 已完成
+  - 阅读进度百分比
+- 阅读前必须进入“进入仪式”页面。
+- 支持 15 / 25 / 45 / 60 分钟和自定义分钟数。
+- 阅读页显示倒计时、时间进度条、手动阅读进度条。
+- 支持记录关键点。
+- 倒计时结束或点击“我读完了”后进入退出仪式。
+- 退出仪式要求填写“读到最重要的点”。
+- 完成退出后，将历史记录保存到浏览器 `localStorage`。
+- 不需要后端、账号、数据库、API key，适合部署到 GitHub Pages。
+
+## 项目文件结构
+
+```text
+focus-reading-launcher/
+  README.md
+  AGENTS.md
+  web/
+    AGENTS.md
+    index.html
+    styles.css
+    app.js
+```
+
+当前仓库中还保留了一些早期实验目录（如 `scripts/`、`templates/`、`docs/`、`skills/`），本次 MVP 的可运行网页入口在 `web/`。
+
+## 本地运行
+
+最简单方式：直接用浏览器打开：
+
+```text
+web/index.html
+```
+
+推荐方式：在本地启动一个静态服务器，便于之后模拟 GitHub Pages：
+
+```bash
+cd web
+python -m http.server 8000
+```
+
+然后访问：
+
+```text
 http://localhost:8000
 ```
 
-网页 demo 支持：
+## 使用流程
 
-- 加载虚构示例活动
-- 生成会前简报 Markdown 预览
-- 粘贴活动后转写并生成复盘草稿
-- 复制 Markdown
-- 下载 Markdown
+1. 在首页填写标题，并选择材料来源。
+2. 输入网页 URL、粘贴文本，或上传本地 `txt` / `md` / `pdf` 文件。
+3. 选择本次阅读时间。
+4. 点击“创建阅读 Session”。
+5. 在阅读卡片中点击“开始进入仪式”。
+6. 完成进入仪式后点击“我已进入阅读状态”，倒计时才会开始。
+7. 阅读过程中可手动更新 25% / 50% / 75% / 100% 进度，并记录关键点。
+8. 倒计时结束或点击“我读完了”进入退出仪式。
+9. 填写“读到最重要的点”，点击“完成退出并保存记录”。
+10. 首页历史记录会展示本次 Session。
 
-所有功能在浏览器本地运行，不接 API，不依赖后端。
+## 数据和隐私
 
-## GitHub Pages 部署步骤
+- 本项目第一版只在浏览器本地运行。
+- 历史记录保存在当前浏览器的 `localStorage`。
+- 不上传用户材料。
+- 不接账号登录。
+- 不做复杂 AI 总结。
+- 不自动发送任何消息。
+- PDF 第一版不解析正文，只保留文件名和占位提示。
 
-1. 把项目 push 到 GitHub。
-2. 打开仓库 Settings。
-3. 进入 Pages。
-4. Source 选择 GitHub Actions。
-5. push 到 `main` 后等待部署。
-6. 部署完成后访问 Pages URL。
+## 后续迭代路线
 
-仓库已包含 `.github/workflows/deploy-pages.yml`，只部署 `web/` 目录，不部署 `outputs/` 中的私人报告。
+### v0.2：阅读体验增强
 
-## 输出文件位置
+- 支持暂停 / 继续倒计时。
+- 支持在退出仪式中回看本次关键点。
+- 支持手动删除单条历史记录。
+- 支持导出历史记录为 JSON 或 Markdown。
+- 支持浏览器主题切换：浅色 / 暗色 / 护眼。
 
-- 会前简报：`outputs/briefs/`
-- 会后复盘：`outputs/reviews/`
-- 转写草稿：`outputs/transcripts/`
-- 人物记忆：`outputs/people/`
-- 跟进任务：`outputs/tasks/`
+### v0.3：文件与内容解析
 
-`.gitignore` 默认忽略 `outputs/` 中的 Markdown、TXT、JSON 私人输出，只保留 `.gitkeep`。
+- 接入前端 PDF 文本解析。
+- 支持拖拽上传文件。
+- 支持从 Markdown 中提取标题。
+- 支持为长文本自动分段，形成更好的阅读视图。
 
-## 隐私边界
+### v0.4：轻量复盘
 
-- 只使用公开信息和用户明确提供的材料。
-- 不推断私人隐私。
-- 不做人脸识别，不做声纹识别。
-- 不偷拍、偷录、监听。
-- 不做违反网站规则的爬虫。
-- 不从录音或转写中推断敏感个人信息。
-- 不把普通寒暄过度解读成人脉价值。
-- 所有“可能到场人员”都标注为推测，并写出依据。
-- 事实、推测、待确认信息必须分开。
-- 不自动发送邮件、微信或任何跟进消息。
-- 不默认上传任何用户数据。
+- 支持为每次 Session 增加“阅读前问题”。
+- 支持退出时选择：继续深入 / 放入稍后 / 放弃。
+- 支持按来源类型、完成度、日期筛选历史记录。
 
-## 后续路线图
+### v1.0：可部署版本
 
-### v1
+- 增加 GitHub Pages 部署工作流。
+- 增加基础无障碍检查。
+- 增加 E2E 测试覆盖创建、进入、倒计时、退出、保存历史流程。
+- 保持无后端默认模式，同时为未来同步功能预留接口边界。
 
-- 支持粘贴活动链接后手动整理信息。
-- 支持从用户提供的网页文本中提取活动信息。
-- 支持更完整的人物卡片。
-- 支持多活动管理。
-- 支持把会前简报和会后复盘关联起来。
+## 开发原则
 
-### v2
-
-- 支持联网搜索公开资料。
-- 支持嘉宾公开资料整理。
-- 支持活动主办方历史活动分析。
-- 支持导出跟进提醒。
-- 支持本地 Whisper 或 API 转写。
-- 支持基于用户上传海报 OCR 后整理活动信息。
-
-### v3
-
-- 做轻量 Web UI。
-- 支持 SQLite 本地数据库。
-- 支持联系人关系沉淀。
-- 支持日历集成。
-- 支持邮件/微信跟进草稿。
-- 支持多活动复盘库。
-
-### v4
-
-- 做真正 App 或插件。
-- 接入 Google Calendar、Gmail、Notion/飞书。
-- 支持定期活动准备提醒。
-- 支持多活动关系网络视图。
-- 支持个人长期关系资产沉淀。
+- 优先使用原生 HTML / CSS / JavaScript。
+- 第一版不引入构建工具，确保可以直接部署静态文件。
+- 用户可见文案使用中文。
+- 代码、字段名、文件名使用英文。
+- 所有数据默认本地优先，不引入账号、后端或远程存储。
