@@ -1,220 +1,481 @@
-const fields = {
-  name: document.querySelector("#eventName"),
-  url: document.querySelector("#eventUrl"),
-  time: document.querySelector("#eventTime"),
-  city: document.querySelector("#eventCity"),
-  venue: document.querySelector("#eventVenue"),
-  organizer: document.querySelector("#eventOrganizer"),
-  topic: document.querySelector("#eventTopic"),
-  speakers: document.querySelector("#eventSpeakers"),
-  description: document.querySelector("#eventDescription"),
-  goal: document.querySelector("#userGoal"),
-  focus: document.querySelector("#userFocus"),
-  energy: document.querySelector("#energyLevel"),
+const storageKey = "focusReadingLauncherRecords";
+const draftKey = "focusReadingLauncherDraft";
+
+const state = {
+  currentSession: null,
+  timerId: null,
+  remainingSeconds: 0,
+  startedAt: null,
+  fileContent: "",
+  fileName: "",
+  fileType: "",
 };
 
-const briefOutput = document.querySelector("#briefOutput");
-const reviewOutput = document.querySelector("#reviewOutput");
+const views = {
+  home: document.querySelector("#homeView"),
+  ritual: document.querySelector("#ritualView"),
+  reading: document.querySelector("#readingView"),
+  exit: document.querySelector("#exitView"),
+};
 
-function val(input) {
-  return input.value.trim() || "待补充";
-}
+const elements = {
+  form: document.querySelector("#sessionForm"),
+  titleInput: document.querySelector("#titleInput"),
+  urlInput: document.querySelector("#urlInput"),
+  textInput: document.querySelector("#textInput"),
+  fileInput: document.querySelector("#fileInput"),
+  fileHint: document.querySelector("#fileHint"),
+  customMinutes: document.querySelector("#customMinutes"),
+  currentSessionCard: document.querySelector("#currentSessionCard"),
+  historyList: document.querySelector("#historyList"),
+  clearHistoryButton: document.querySelector("#clearHistoryButton"),
+  ritualTitle: document.querySelector("#ritualTitle"),
+  enterReadingButton: document.querySelector("#enterReadingButton"),
+  cancelRitualButton: document.querySelector("#cancelRitualButton"),
+  readingTitle: document.querySelector("#readingTitle"),
+  timerDisplay: document.querySelector("#timerDisplay"),
+  timeProgressText: document.querySelector("#timeProgressText"),
+  timeProgressBar: document.querySelector("#timeProgressBar"),
+  readingProgressText: document.querySelector("#readingProgressText"),
+  readingProgressRange: document.querySelector("#readingProgressRange"),
+  keyPointInput: document.querySelector("#keyPointInput"),
+  saveKeyPointButton: document.querySelector("#saveKeyPointButton"),
+  finishReadingButton: document.querySelector("#finishReadingButton"),
+  sourceTypeLabel: document.querySelector("#sourceTypeLabel"),
+  openLinkButton: document.querySelector("#openLinkButton"),
+  contentArea: document.querySelector("#contentArea"),
+  keyPointList: document.querySelector("#keyPointList"),
+  exitMeta: document.querySelector("#exitMeta"),
+  takeawayInput: document.querySelector("#takeawayInput"),
+  nextActionInput: document.querySelector("#nextActionInput"),
+  completeExitButton: document.querySelector("#completeExitButton"),
+};
 
-function lines(text) {
-  return text.split(/\n+/).map((item) => item.trim()).filter(Boolean);
-}
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function safeFilePart(text) {
-  return (text || "event").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-\u4e00-\u9fa5]/g, "").slice(0, 60) || "event";
-}
-
-function minimumAction(energy) {
-  if (energy === "低") return "只完成三个动作：听清主办方真实目的、找一个高质量信息源聊 5 分钟、活动后记录 3 条有效信息。";
-  if (energy === "高") return "可以主动交换联系方式，但仍要避免低价值闲聊过载。";
-  return "优先完成 2 到 3 次有效交流，并保留跟进线索。";
-}
-
-function speakerSection() {
-  const speakerLines = lines(fields.speakers.value);
-  if (speakerLines.length === 0) {
-    return "暂无确定嘉宾，建议补充活动页面、海报、报名页或主办方公开信息。";
-  }
-  return speakerLines.map((speaker) => `- ${speaker}：优先判断其是否能提供真实场景、具体经验或可验证问题。`).join("\n");
-}
-
-function buildBrief() {
-  const speakers = speakerSection();
-  const goal = val(fields.goal);
-  const goalAdvice = goal === "待补充"
-    ? "建议先明确本次活动目标：找信息、找人、找机会、找项目、找工作、找合作，至少选择一个。"
-    : goal;
-
-  return `# 会前简报：${val(fields.name)}
-
-## 一句话判断
-这是一个需要被当作“信息场”和“关系场”来观察的活动。当前简报只基于你在浏览器中输入的信息生成，没有联网搜索。
-
-## 这个活动本质上是什么局
-- 活动主题：${val(fields.topic)}
-- 主办方：${val(fields.organizer)}
-- 初步判断：可能是围绕主题聚集一线经验、项目机会、资源连接或行业观察的场域。该判断为推测，依据是活动主题、主办方和简介。
-
-## 确定信息
-| 项目 | 内容 | 来源 |
-|---|---|---|
-| 活动名称 | ${val(fields.name)} | 用户输入 |
-| 活动链接 | ${val(fields.url)} | 用户输入 |
-| 活动时间 | ${val(fields.time)} | 用户输入 |
-| 城市 | ${val(fields.city)} | 用户输入 |
-| 场地 | ${val(fields.venue)} | 用户输入 |
-| 活动简介 | ${val(fields.description)} | 用户输入 |
-
-## 推测判断
-| 判断 | 依据 | 置信度 | 需要验证 |
-|---|---|---|---|
-| 可能适合寻找高质量信息源，而不是泛泛社交 | 活动主题与用户目标 | 中 | 现场参会者构成 |
-| 主办方可能希望聚集项目方、运营者或资源方 | 主办方和活动简介 | 中 | 主办方开场介绍 |
-| 可能存在可跟进的一线问题 | 嘉宾与主题设置 | 中 | 自由交流中的具体案例 |
-
-## 可能到场人群画像
-| 人群 | 为什么会来 | 价值 | 交流优先级 |
-|---|---|---|---|
-| 推测：主题相关从业者 | 依据：活动主题 | 可提供一线问题 | 中 |
-| 推测：项目方或创业者 | 依据：活动定位 | 可验证需求与合作可能 | 中 |
-| 推测：投资或资源观察者 | 依据：行业分享类活动常见结构 | 可提供判断框架，但需避免空泛融资叙事 | 低到中 |
-
-## 重点关注人物/角色
-${speakers}
-
-## 可聊话题
-- ${val(fields.focus)}
-- 对方最近遇到的真实重复问题。
-- 哪些需求有数据、访谈或付费证据。
-
-## 可问问题
-- 你最近最确定的一个真实需求是什么？
-- 这个需求来自数据、访谈、客户付费，还是现场观察？
-- 哪些热闹话题其实不值得投入？
-- 如果我会后只验证一个问题，你建议从哪里开始？
-
-## 要观察的现场信号
-- 主办方反复强调哪些人群和关键词。
-- 嘉宾是否给出具体案例、数据、反例。
-- 自由交流中哪些问题被反复问到。
-- 哪些人只是礼貌寒暄，哪些人能给出可验证信息。
-
-## 要避免的话题
-- 未经确认的私人信息。
-- 没有数据依据的风口判断。
-- 把普通寒暄过度解读为高价值关系。
-
-## 最小有效行动
-${minimumAction(fields.energy.value)}
-
-## 活动后跟进预案
-- 当天记录 3 条有效信息、2 个待确认问题、1 个值得跟进对象。
-- 跟进只生成草稿，不自动发送任何消息。
-- 所有推测继续标注依据和置信度。
-
-## 待补充信息
-- ${goalAdvice === goal ? "真实报名人构成" : goalAdvice}
-- 嘉宾或参会者公开资料来源。
-- 主办方过往活动和现场实际人群。`;
-}
-
-function buildReview() {
-  const eventName = document.querySelector("#reviewEventName").value.trim() || val(fields.name);
-  const transcript = document.querySelector("#transcriptText").value.trim() || "待补充";
-  const paragraphs = transcript === "待补充" ? [] : transcript.split(/\n\s*\n/).filter(Boolean);
-  const summaryRows = paragraphs.length
-    ? paragraphs.slice(0, 6).map((text, index) => `| 片段 ${index + 1} | 待人工确认 | ${text.replace(/\n/g, " ").slice(0, 80)}${text.length > 80 ? "……" : ""} | 第 ${index + 1} 段 |`).join("\n")
-    : "| 待补充 | 待补充 | 请粘贴转写文本 | 待补充 |";
-
-  return `# 基于转写的活动复盘：${eventName || "待补充"}
-
-## 总体判断
-这是一份本地生成的复盘草稿，只整理用户主动提供的文本，不做音频识别，不联网，不推断敏感个人信息。
-
-## 识别到的人物/称呼
-| 人物/称呼 | 机构/身份 | 证据片段 | 确定性 |
-|---|---|---|---|
-| 待人工确认 | 待补充 | 请根据原文核对姓名、机构和角色 | 待确认 |
-
-## 重要对话摘要
-| 主题 | 相关人物 | 摘要 | 原文位置 |
-|---|---|---|---|
-${summaryRows}
-
-## 有价值的信息
-| 信息 | 来源片段 | 可信度 | 为什么重要 |
-|---|---|---|---|
-| 待人工筛选 | 原始转写 | 待确认 | 只保留与活动目标相关、可验证、可行动的信息 |
-
-## 值得跟进的人
-| 人物 | 原因 | 优先级 | 建议动作 |
-|---|---|---|---|
-| 待人工选择 | 需要明确问题、价值或对方许可 | 待定 | 只生成草稿，不自动联系 |
-
-## 跟进话术草稿
-你好，今天在「${eventName || "这场活动"}」听到你提到的具体问题很有启发。我想后续请教一个小问题：……如果方便，我可以发一版问题清单给你看。谢谢。
-
-## 待确认事项
-- 人物姓名、机构、角色是否准确。
-- 哪些内容只是普通寒暄。
-- 哪些信息来自明确表达，哪些只是用户主观印象。
-
-## 不应过度解读的内容
-- 普通寒暄、交换名片、礼貌回应不等于高价值关系。
-- 未确认的资源、身份和合作意愿不能当作事实。
-- 不从转写中推断私人敏感信息。
-
-## 原始转写
-${transcript}`;
-}
-
-function copyMarkdown(type) {
-  const text = type === "review" ? reviewOutput.textContent : briefOutput.textContent;
-  navigator.clipboard.writeText(text).then(() => alert("已复制 Markdown"));
-}
-
-function downloadMarkdown(type) {
-  const text = type === "review" ? reviewOutput.textContent : briefOutput.textContent;
-  const title = type === "review" ? "post-event-review" : "pre-event-brief";
-  const eventName = type === "review" ? document.querySelector("#reviewEventName").value : fields.name.value;
-  const filename = `${today()}-${safeFilePart(eventName)}-${title}.md`;
-  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-document.querySelector("#loadSample").addEventListener("click", () => {
-  Object.entries(window.sampleEvent).forEach(([key, value]) => {
-    if (fields[key]) fields[key].value = value;
+function showView(name) {
+  Object.entries(views).forEach(([viewName, node]) => {
+    node.classList.toggle("is-active", viewName === name);
   });
-  document.querySelector("#reviewEventName").value = window.sampleEvent.name;
-  document.querySelector("#transcriptText").value = window.sampleEvent.transcript;
-});
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-document.querySelector("#generateBrief").addEventListener("click", () => {
-  briefOutput.textContent = buildBrief();
-});
+function getSelectedSourceType() {
+  return document.querySelector("input[name='sourceType']:checked").value;
+}
 
-document.querySelector("#generateReview").addEventListener("click", () => {
-  reviewOutput.textContent = buildReview();
-});
+function getSelectedDuration() {
+  const selectedValue = document.querySelector("input[name='duration']:checked").value;
+  if (selectedValue === "custom") {
+    const customValue = Number(elements.customMinutes.value);
+    return Number.isFinite(customValue) && customValue > 0 ? Math.round(customValue) : 25;
+  }
+  return Number(selectedValue);
+}
 
-document.querySelectorAll("[data-copy]").forEach((button) => {
-  button.addEventListener("click", () => copyMarkdown(button.dataset.copy));
-});
+function formatDateTime(dateString) {
+  const formatter = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return formatter.format(new Date(dateString));
+}
 
-document.querySelectorAll("[data-download]").forEach((button) => {
-  button.addEventListener("click", () => downloadMarkdown(button.dataset.download));
-});
+function formatTimer(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = Math.max(0, totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function sourceLabel(type) {
+  const labels = { link: "网页链接", text: "粘贴文本", file: "本地文件" };
+  return labels[type] || type;
+}
+
+function estimateReadingMinutes(type, content) {
+  if (type === "link") return 15;
+  const visibleText = (content || "").replace(/\s+/g, "");
+  if (!visibleText) return 5;
+  return Math.max(5, Math.ceil(visibleText.length / 450));
+}
+
+function readRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function writeRecords(records) {
+  localStorage.setItem(storageKey, JSON.stringify(records));
+}
+
+function saveDraft(session) {
+  localStorage.setItem(draftKey, JSON.stringify(session));
+}
+
+function clearDraft() {
+  localStorage.removeItem(draftKey);
+}
+
+function updateSourcePanels() {
+  const selected = getSelectedSourceType();
+  document.querySelectorAll("[data-source-panel]").forEach((panel) => {
+    panel.classList.toggle("is-hidden", panel.dataset.sourcePanel !== selected);
+  });
+}
+
+function getMaterialPayload(type) {
+  if (type === "link") {
+    const url = elements.urlInput.value.trim();
+    return {
+      content: url,
+      displayContent: url ? `这是一个网页链接。请点击右上角“打开链接”，在新标签页阅读原文。\n\n${url}` : "待补充链接。",
+      originalName: url,
+    };
+  }
+
+  if (type === "file") {
+    const isPdf = state.fileType === "application/pdf" || state.fileName.toLowerCase().endsWith(".pdf");
+    return {
+      content: state.fileContent || state.fileName,
+      displayContent: isPdf
+        ? `已选择 PDF 文件：${state.fileName || "未命名 PDF"}\n\nMVP 暂不解析 PDF 正文。后续可在这里接入 PDF 文本解析；本次 Session 可先用于限时阅读外部文件。`
+        : state.fileContent || "请先选择 txt 或 md 文件。PDF 第一版只显示占位提示。",
+      originalName: state.fileName,
+    };
+  }
+
+  const text = elements.textInput.value.trim();
+  return {
+    content: text,
+    displayContent: text || "请粘贴要阅读的文本。",
+    originalName: "粘贴文本",
+  };
+}
+
+function createSession(event) {
+  event.preventDefault();
+  const type = getSelectedSourceType();
+  const payload = getMaterialPayload(type);
+  const title = elements.titleInput.value.trim() || inferTitle(type, payload.originalName, payload.content);
+  const durationMinutes = getSelectedDuration();
+
+  state.currentSession = {
+    id: `session-${Date.now()}`,
+    title,
+    sourceType: type,
+    sourceLabel: sourceLabel(type),
+    sourceValue: payload.originalName,
+    content: payload.displayContent,
+    durationMinutes,
+    estimatedMinutes: estimateReadingMinutes(type, payload.content),
+    status: "未开始",
+    readingProgress: 0,
+    timeProgress: 0,
+    keyPoints: [],
+    createdAt: new Date().toISOString(),
+    startedAt: null,
+    endedAt: null,
+    takeaway: "",
+    nextAction: "",
+  };
+
+  renderCurrentSessionCard();
+  saveDraft(state.currentSession);
+}
+
+function inferTitle(type, name, content) {
+  if (type === "link" && name) {
+    try {
+      return new URL(name).hostname.replace(/^www\./, "");
+    } catch (error) {
+      return "网页阅读 Session";
+    }
+  }
+  if (type === "file" && name) return name;
+  const firstLine = (content || "").split("\n").find((line) => line.trim());
+  return firstLine ? firstLine.trim().slice(0, 32) : "未命名阅读 Session";
+}
+
+function renderCurrentSessionCard() {
+  const session = state.currentSession;
+  if (!session) {
+    elements.currentSessionCard.className = "empty-card";
+    elements.currentSessionCard.innerHTML = "<p>还没有阅读 Session。请先放入一份材料。</p>";
+    return;
+  }
+
+  elements.currentSessionCard.className = "reading-card";
+  elements.currentSessionCard.innerHTML = `
+    <div class="card-topline">
+      <span>${escapeHtml(session.sourceLabel)}</span>
+      <strong>${escapeHtml(session.status)}</strong>
+    </div>
+    <h3>${escapeHtml(session.title)}</h3>
+    <dl class="meta-grid">
+      <div><dt>预计阅读时长</dt><dd>${session.estimatedMinutes} 分钟</dd></div>
+      <div><dt>本次时间限制</dt><dd>${session.durationMinutes} 分钟</dd></div>
+      <div><dt>阅读进度</dt><dd>${session.readingProgress}%</dd></div>
+      <div><dt>来源类型</dt><dd>${session.sourceType}</dd></div>
+    </dl>
+    <div class="progress-track"><div class="progress-fill" style="width: ${session.readingProgress}%"></div></div>
+    <button id="startRitualButton" class="primary-action" type="button">开始进入仪式</button>
+  `;
+
+  document.querySelector("#startRitualButton").addEventListener("click", startRitual);
+}
+
+function startRitual() {
+  if (!state.currentSession) return;
+  elements.ritualTitle.textContent = `准备阅读：${state.currentSession.title}`;
+  showView("ritual");
+}
+
+function beginReading() {
+  const session = state.currentSession;
+  if (!session) return;
+
+  session.status = "阅读中";
+  session.startedAt = new Date().toISOString();
+  state.startedAt = Date.now();
+  state.remainingSeconds = session.durationMinutes * 60;
+  saveDraft(session);
+  renderReadingView();
+  showView("reading");
+  startTimer();
+}
+
+function renderReadingView() {
+  const session = state.currentSession;
+  elements.readingTitle.textContent = session.title;
+  elements.sourceTypeLabel.textContent = session.sourceLabel;
+  elements.readingProgressRange.value = session.readingProgress;
+  updateReadingProgress(session.readingProgress);
+  elements.keyPointInput.value = "";
+  elements.contentArea.innerHTML = `<pre>${escapeHtml(session.content)}</pre>`;
+  elements.openLinkButton.classList.toggle("is-hidden", session.sourceType !== "link");
+  if (session.sourceType === "link" && session.sourceValue) {
+    elements.openLinkButton.href = session.sourceValue;
+  }
+  renderKeyPoints();
+  updateTimerDisplay();
+}
+
+function startTimer() {
+  stopTimer();
+  state.timerId = window.setInterval(() => {
+    state.remainingSeconds -= 1;
+    updateTimerDisplay();
+    if (state.remainingSeconds <= 0) {
+      finishReading("timeup");
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (state.timerId) {
+    window.clearInterval(state.timerId);
+    state.timerId = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const session = state.currentSession;
+  if (!session) return;
+  const totalSeconds = session.durationMinutes * 60;
+  const elapsedSeconds = Math.max(0, totalSeconds - state.remainingSeconds);
+  const percent = Math.min(100, Math.round((elapsedSeconds / totalSeconds) * 100));
+  session.timeProgress = percent;
+  elements.timerDisplay.textContent = formatTimer(Math.max(0, state.remainingSeconds));
+  elements.timeProgressText.textContent = `${percent}%`;
+  elements.timeProgressBar.style.width = `${percent}%`;
+}
+
+function updateReadingProgress(value) {
+  const session = state.currentSession;
+  const progress = Number(value);
+  if (session) {
+    session.readingProgress = progress;
+    saveDraft(session);
+  }
+  elements.readingProgressRange.value = progress;
+  elements.readingProgressText.textContent = `${progress}%`;
+}
+
+function saveKeyPoint() {
+  const session = state.currentSession;
+  const text = elements.keyPointInput.value.trim();
+  if (!session || !text) return;
+  session.keyPoints.push(text);
+  elements.keyPointInput.value = "";
+  saveDraft(session);
+  renderKeyPoints();
+}
+
+function renderKeyPoints() {
+  const session = state.currentSession;
+  const points = session?.keyPoints || [];
+  elements.keyPointList.innerHTML = points.length
+    ? points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")
+    : "<li>还没有关键点。读到有判断力的信息时再记录。</li>";
+}
+
+function finishReading(reason = "manual") {
+  const session = state.currentSession;
+  if (!session) return;
+  stopTimer();
+  saveKeyPoint();
+  session.status = "已完成";
+  session.endedAt = new Date().toISOString();
+  if (reason === "timeup") {
+    session.timeProgress = 100;
+  }
+  saveDraft(session);
+  elements.exitMeta.textContent = reason === "timeup"
+    ? "倒计时已结束。请用一分钟收束这次阅读。"
+    : `你已结束《${session.title}》的阅读。请写下最重要的收获。`;
+  elements.takeawayInput.value = session.takeaway;
+  elements.nextActionInput.value = session.nextAction;
+  showView("exit");
+}
+
+function completeExit() {
+  const session = state.currentSession;
+  if (!session) return;
+  const takeaway = elements.takeawayInput.value.trim();
+  if (!takeaway) {
+    elements.takeawayInput.focus();
+    alert("请先填写：读到最重要的点。完成退出需要一个明确收获。");
+    return;
+  }
+  session.takeaway = takeaway;
+  session.nextAction = elements.nextActionInput.value.trim();
+  session.endedAt = session.endedAt || new Date().toISOString();
+  session.status = "已完成";
+
+  const records = readRecords();
+  records.unshift({
+    id: session.id,
+    date: session.endedAt,
+    title: session.title,
+    sourceType: session.sourceType,
+    sourceLabel: session.sourceLabel,
+    durationMinutes: session.durationMinutes,
+    readingProgress: session.readingProgress,
+    takeaway: session.takeaway,
+    nextAction: session.nextAction,
+    keyPoints: session.keyPoints,
+  });
+  writeRecords(records.slice(0, 50));
+  clearDraft();
+  state.currentSession = null;
+  renderCurrentSessionCard();
+  renderHistory();
+  showView("home");
+}
+
+function renderHistory() {
+  const records = readRecords();
+  if (!records.length) {
+    elements.historyList.innerHTML = "<div class='empty-history'>暂无历史记录。完成一次退出仪式后会显示在这里。</div>";
+    return;
+  }
+
+  elements.historyList.innerHTML = records.map((record) => `
+    <article class="history-item">
+      <div>
+        <time>${formatDateTime(record.date)}</time>
+        <h3>${escapeHtml(record.title)}</h3>
+        <p>${escapeHtml(record.takeaway)}</p>
+        ${record.nextAction ? `<small>下一步：${escapeHtml(record.nextAction)}</small>` : ""}
+      </div>
+      <dl>
+        <div><dt>类型</dt><dd>${escapeHtml(record.sourceLabel || record.sourceType)}</dd></div>
+        <div><dt>时长</dt><dd>${record.durationMinutes} 分钟</dd></div>
+        <div><dt>完成度</dt><dd>${record.readingProgress}%</dd></div>
+      </dl>
+    </article>
+  `).join("");
+}
+
+function loadDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(draftKey));
+    if (draft && draft.status !== "已完成") {
+      state.currentSession = draft;
+      renderCurrentSessionCard();
+    }
+  } catch (error) {
+    clearDraft();
+  }
+}
+
+function handleFileChange() {
+  const file = elements.fileInput.files[0];
+  state.fileContent = "";
+  state.fileName = file?.name || "";
+  state.fileType = file?.type || "";
+
+  if (!file) {
+    elements.fileHint.textContent = "支持 txt / md 直接预览；pdf 第一版仅保存文件名并显示后续解析提示。";
+    return;
+  }
+
+  const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  if (isPdf) {
+    elements.fileHint.textContent = `已选择 ${file.name}。PDF 解析将在后续版本接入，本次仅创建限时 Session。`;
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.fileContent = String(reader.result || "");
+    elements.fileHint.textContent = `已读取 ${file.name}，可创建阅读 Session。`;
+    if (!elements.titleInput.value.trim()) elements.titleInput.value = file.name;
+  };
+  reader.onerror = () => {
+    elements.fileHint.textContent = "文件读取失败，请换一个 txt 或 md 文件。";
+  };
+  reader.readAsText(file);
+}
+
+function bindEvents() {
+  document.querySelectorAll("input[name='sourceType']").forEach((radio) => {
+    radio.addEventListener("change", updateSourcePanels);
+  });
+  document.querySelector("input[value='custom']").addEventListener("change", () => elements.customMinutes.focus());
+  elements.form.addEventListener("submit", createSession);
+  elements.fileInput.addEventListener("change", handleFileChange);
+  elements.enterReadingButton.addEventListener("click", beginReading);
+  elements.cancelRitualButton.addEventListener("click", () => showView("home"));
+  elements.readingProgressRange.addEventListener("input", (event) => updateReadingProgress(event.target.value));
+  document.querySelectorAll("[data-progress]").forEach((button) => {
+    button.addEventListener("click", () => updateReadingProgress(button.dataset.progress));
+  });
+  elements.saveKeyPointButton.addEventListener("click", saveKeyPoint);
+  elements.finishReadingButton.addEventListener("click", () => finishReading("manual"));
+  elements.completeExitButton.addEventListener("click", completeExit);
+  elements.clearHistoryButton.addEventListener("click", () => {
+    if (confirm("确定清空本浏览器中的历史阅读记录吗？")) {
+      writeRecords([]);
+      renderHistory();
+    }
+  });
+}
+
+bindEvents();
+updateSourcePanels();
+loadDraft();
+renderHistory();
