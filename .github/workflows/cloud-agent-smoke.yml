@@ -1,0 +1,34 @@
+name: Cloud agent shared-workspace smoke
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/cloud_agent_smoke.py'
+      - '.github/workflows/cloud-agent-smoke.yml'
+      - 'README.md'
+      - 'web/index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remote-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository in GitHub's cloud runner
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run shared code without MacBook
+        run: python scripts/cloud_agent_smoke.py
+      - name: Preserve independently inspectable report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-agent-smoke-report
+          path: artifacts/cloud-agent-smoke.json
+          if-no-files-found: error
+          retention-days: 7
